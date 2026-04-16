@@ -64,3 +64,35 @@ int send_hex_cmd(int argc, char **argv)
     return 0;
 }
 ```
+
+<!-- end_slide -->
+
+# LoRa ₍ᐢ֎ﻌ֍ᐢ₎ʃ
+
+## Format de messages
+
+`ID-Source@ID-dest:message`
+
+Avec un broadcast sur `*` :
+
+`ID-source@*:message`
+
+<!-- new_lines: 3 -->
+
+## Commandes
+
+- `init` : initialise le modem SX127x
+- `setup <bw> <sf> <cr>` : regle la modulation LoRa
+- `channel set <hz>` : regle la frequence
+- `listen` : passe en ecoute continue
+- `id get|set <n>` : lit ou fixe l'identifiant local
+- `chat_send <dest_id|*> <message>` : envoie une trame `src@dest:message` ou
+  `src@*:message`
+
+<!-- new_lines: 3 -->
+
+## Risques de sécurité
+
+- 👀 Messages privés reçus en clair par chaque noeud
+- 🥸 Usurpation d'identité
+- 😈 Payload malicieux
