@@ -57,6 +57,8 @@ static uint8_t txhex_payload[255];
 static bool rxhex_enabled;
 static sx127x_t sx127x;
 
+static bool echo_enabled = false;
+
 static size_t convert_hex(uint8_t *dest, size_t max_len, const char *src)
 {
     size_t src_len = strlen(src);
@@ -319,6 +321,11 @@ int send_cmd(int argc, char **argv)
     {
         puts("Cannot send: radio is still transmitting");
     }
+    else if (echo_enabled)
+    {
+        printf("[destinataire] {Payload: \"%s\" (%u bytes)}\n",
+               argv[1], (unsigned)strlen(argv[1]) + 1);
+    }
 
     return 0;
 }
@@ -352,7 +359,46 @@ int send_hex_cmd(int argc, char **argv)
     {
         puts("Cannot send: radio is still transmitting");
     }
+    else if (echo_enabled)
+    {
+        printf("[destinataire] {Payload TEXT: \"");
+        for (size_t i = 0; i < len; i++)
+        {
+            // Print only printable ASCII characters, replace others with '.'
+            if (txhex_payload[i] >= 32 && txhex_payload[i] <= 126)
+                putchar(txhex_payload[i]);
+            else
+                putchar('.');
+        }
+        printf("\" (%u bytes)}\n", (unsigned)len);
+    }
+    return 0;
+}
 
+int echo_cmd(int argc, char **argv)
+{
+    if (argc < 2)
+    {
+        printf("echo is %s\n", echo_enabled ? "enabled" : "disabled");
+        puts("usage: echo <on|off>");
+        return 0;
+    }
+
+    if ((strcmp(argv[1], "on") == 0) || (strcmp(argv[1], "1") == 0))
+    {
+        echo_enabled = true;
+    }
+    else if ((strcmp(argv[1], "off") == 0) || (strcmp(argv[1], "0") == 0))
+    {
+        echo_enabled = false;
+    }
+    else
+    {
+        puts("usage: echo <on|off>");
+        return -1;
+    }
+
+    printf("echo is now %s\n", echo_enabled ? "enabled" : "disabled");
     return 0;
 }
 
@@ -741,13 +787,14 @@ static const shell_command_t shell_commands[] = {
     {"send_hex", "Send payload in hexadecimal", send_hex_cmd},
     {"rxhex", "Enable/disable RX hexadecimal display", rxhex_cmd},
     {"listen", "Start raw payload listener", listen_cmd},
+    {"echo", "Enable/disable echo mode (re-send received payload)", echo_cmd},
     {"reset", "Reset the sx127x device", reset_cmd},
     {NULL, NULL, NULL}};
 
 int main(void)
 {
 
-    // init_sx1272_cmd(0,NULL);
+    init_sx1272_cmd(0,NULL);
 
     /* start the shell */
     puts("Initialization successful - starting the shell now");
