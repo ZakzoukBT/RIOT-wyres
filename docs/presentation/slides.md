@@ -91,8 +91,9 @@ Avec un broadcast sur `*` :
 
 <!-- new_lines: 3 -->
 
-## Risques de sécurité
+## Limitations et Risques de sécurité
 
+- 💢 Saisie "cassée" à la réception d'un message
 - 👀 Messages privés reçus en clair par chaque noeud
 - 🥸 Usurpation d'identité
 - 😈 Payload malicieux
