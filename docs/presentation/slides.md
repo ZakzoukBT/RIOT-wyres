@@ -22,6 +22,10 @@ options:
 - Débugging 😭
 - Installation de [RIOT-wyres](https://github.com/CampusIoT/RIOT-wyres)
 
+<!-- speaker_notes: |
+    On a passé 2 scéances là dessus lol
+-->
+
 <!-- column: 1 -->
 
 ![board](./assets/board.jpg)
@@ -29,6 +33,11 @@ options:
 <!-- end_slide -->
 
 # Customisation du driver
+
+<!-- speaker_notes: |
+    On a perdu beaucoup de temps à débugger en pensant que notre code causait des Kernel panic,
+    qui ont étés très aléatoires, mais en fait c'était qu'on n'exécutait pas la commande `init`.
+-->
 
 ## Commandes TX/RX hexadécimal
 
@@ -68,6 +77,10 @@ int send_hex_cmd(int argc, char **argv)
 <!-- end_slide -->
 
 # LoRa ₍ᐢ֎ﻌ֍ᐢ₎ʃ
+
+<!-- speaker_notes: |
+    À partir d'ici c'était plutôt facile, on avait bien le contrôle sur la carte, et l'implémentation a été plutôt rapide bien que difficile à tester
+ -->
 
 ## Format de messages
 
