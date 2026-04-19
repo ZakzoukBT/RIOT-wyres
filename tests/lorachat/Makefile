@@ -13,12 +13,18 @@ USEMODULE += od
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_cmds_default
+#USEMODULE += shell_commands
+USEMODULE += fmt
 
 DRIVER ?= sx1272
+# use SX1276 by default
 USEMODULE += $(DRIVER)
 
-# Keep debug sections small on constrained devices
+# Fix the problem of the size of the debugging files
 CFLAGS_DBG =
+
 CFLAGS += -DISR_STACKSIZE=1024U
+#CFLAGS += -DSX127X_STACKSIZE=1024U
+
 
 include $(RIOTBASE)/Makefile.include
