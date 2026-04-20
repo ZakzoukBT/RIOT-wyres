@@ -32,7 +32,7 @@
 static char stack[SX127X_STACKSIZE];
 static kernel_pid_t _recv_pid;
 
-static char message[32];
+static char message[MAX_MESSAGE_LEN];
 static uint8_t txhex_payload[255];
 static bool rxhex_enabled;
 static sx127x_t sx127x;
@@ -722,7 +722,8 @@ int lorachat_send_cmd(int argc, char **argv) {
         return -1;
     }
 
-    char constructed_message[8]; lorachat_construct_message(argv[1], constructed_message);
+    char constructed_message[MAX_MESSAGE_LEN]; 
+    lorachat_construct_message(argv[1], constructed_message);
 
     iolist_t iolist = {
         .iol_base = constructed_message,
@@ -734,6 +735,10 @@ int lorachat_send_cmd(int argc, char **argv) {
     {
         puts("Cannot send: radio is still transmitting");
     }
+
+    // Increment message id after sending
+    extern uint16_t lorachat_next_msg_id;
+    lorachat_next_msg_id++;
 
     return 0;
 }

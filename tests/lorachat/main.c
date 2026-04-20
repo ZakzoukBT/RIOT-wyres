@@ -21,6 +21,7 @@
  */
 
 #include "commands.h"
+#include <string.h>
 
 static const shell_command_t shell_commands[] = {
     {"init", "Initialize SX1272", init_sx1272_cmd},
@@ -33,7 +34,8 @@ static const shell_command_t shell_commands[] = {
     {"rx_timeout", "Set the RX timeout", rx_timeout_cmd},
     {"channel", "Get/Set channel frequency (in Hz)", channel_cmd},
     {"register", "Get/Set value(s) of registers of sx127x", register_cmd},
-    {"send", "Send raw payload string", send_cmd},
+    // {"send", "Send raw payload string", send_cmd},
+    {"send", "Send raw payload string", lorachat_send_cmd},
     {"send_hex", "Send payload in hexadecimal", send_hex_cmd},
     {"rxhex", "Enable/disable RX hexadecimal display", rxhex_cmd},
     {"listen", "Start raw payload listener", listen_cmd},
@@ -46,8 +48,7 @@ static const shell_command_t shell_commands[] = {
 
 int main(void)
 {
-    puts("LoRaChat ready - type 'help' for commands");
-
+    init_sx1272_cmd(0, NULL);
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

@@ -5,9 +5,13 @@
 #include <stdbool.h>
 
 #define MAX_NODES 32
+#define MAX_NODE_LEN 8
 #define MAX_SALONS 8
+#define MAX_SALON_LEN 8
 #define MAX_MESSAGES 32
-#define MAX_MESSAGE_LEN 64
+#define MAX_MESSAGE_CONTENT_LEN 64
+#define MAX_MESSAGE_ID_LEN 8
+#define MAX_MESSAGE_LEN (MAX_NODE_LEN+1+MAX_SALON_LEN+1+MAX_MESSAGE_ID_LEN+1+MAX_MESSAGE_CONTENT_LEN)
 #define MAX_SENSORS 16
 
 typedef struct {
@@ -17,14 +21,13 @@ typedef struct {
 
 typedef struct {
     uint8_t salon_id;
-    bool subscribed;
 } salon_t;
 
 typedef struct {
     uint8_t sender;
     uint8_t dest;
     uint8_t msg_num;
-    char content[MAX_MESSAGE_LEN];
+    char content[MAX_MESSAGE_CONTENT_LEN];
 } message_t;
 
 typedef struct {
@@ -33,6 +36,9 @@ typedef struct {
     uint8_t tail;
     uint8_t count;
 } message_queue_t;
+
+/* Global next message id for this sender */
+extern uint16_t lorachat_next_msg_id;
 
 /* Init lorachat global variables */
 void lorachat_init(void);
