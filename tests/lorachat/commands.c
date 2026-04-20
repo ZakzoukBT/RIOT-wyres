@@ -1,7 +1,9 @@
 #include "commands.h"
 #include "hex.h"
+#include "lorachat.h"
 
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -613,28 +615,20 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
         case NETDEV_EVENT_RX_COMPLETE:
             len = dev->driver->recv(dev, NULL, 0, 0);
             size_t rx_len = len;
-            if (rx_len >= sizeof(rx_buf))
-            {
+            if (rx_len >= sizeof(rx_buf)) {
                 rx_len = sizeof(rx_buf) - 1;
             }
 
             dev->driver->recv(dev, rx_buf, rx_len, &packet_info);
-            memcpy(message, rx_buf,
-                   (rx_len < (sizeof(message) - 1)) ? rx_len : (sizeof(message) - 1));
+            memcpy(message, rx_buf, (rx_len < (sizeof(message) - 1)) ? rx_len : (sizeof(message) - 1));
             message[(rx_len < (sizeof(message) - 1)) ? rx_len : (sizeof(message) - 1)] = '\0';
 
-            printf(
-                "{Payload: \"%s\" (%d bytes), RSSI: %i, SNR: %i, TOA: %" PRIu32 "}\n",
-                message, (int)len,
-                packet_info.rssi, (int)packet_info.snr,
-                sx127x_get_time_on_air((const sx127x_t *)dev, len));
+            // Lorachat message handling
+            lorachat_handle_received_message(message);
 
-            if (rxhex_enabled)
-            {
-                printf("{Payload HEX: ");
-                print_hex_payload(rx_buf, rx_len);
-                printf("}\n");
-            }
+            // if (rxhex_enabled) {
+            //     print_hex_payload(rx_buf, rx_len);
+            // }
             break;
 
         case NETDEV_EVENT_TX_COMPLETE:
@@ -711,5 +705,74 @@ int init_sx1272_cmd(int argc, char **argv)
     }
     puts("5");
 
+    puts("Initiating LoRa₍ᐢ֎ﻌ֍ᐢ₎ʃ");
+    lorachat_init();
+
+    return 0;
+}
+
+/******************************/
+/********** LORACHAT **********/
+/******************************/
+
+int lorachat_send_cmd(int argc, char **argv) {
+    if (argc <= 1)
+    {
+        puts("usage: send <payload>");
+        return -1;
+    }
+
+    char constructed_message[8]; lorachat_construct_message(argv[1], constructed_message);
+
+    iolist_t iolist = {
+        .iol_base = constructed_message,
+        .iol_len = (strlen(constructed_message) + 1)};
+
+    netdev_t *netdev = &sx127x.netdev;
+
+    if (netdev->driver->send(netdev, &iolist) == -ENOTSUP)
+    {
+        puts("Cannot send: radio is still transmitting");
+    }
+
+    return 0;
+}
+
+int nodes_cmd(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    lorachat_print_nodes();
+    return 0;
+}
+
+int salons_cmd(int argc, char **argv) {
+    if (argc < 2) {
+        puts("usage: salons <add|remove> <salon_name>");
+        return -1;
+    }
+    if (strcmp(argv[1], "add") == 0) {
+        if (argc < 3) {
+            puts("usage: salons add <salon_name>");
+            return -1;
+        }
+        lorachat_add_salon((uint8_t)atoi(argv[2]));
+    } else if (strcmp(argv[1], "remove") == 0) {
+        if (argc < 3) {
+            puts("usage: salons remove <salon_name>");
+            return -1;
+        }
+
+        lorachat_remove_salon((uint8_t)atoi(argv[2]));
+    } else {
+        puts("usage: salons <add|remove> <salon_name>");
+        return -1;
+    }
+    return 0;
+}
+
+int messages_cmd(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    lorachat_print_messages();
     return 0;
 }

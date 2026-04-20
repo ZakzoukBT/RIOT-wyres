@@ -1,6 +1,7 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include "lorachat.h"
 #include "shell.h"
 
 int lora_setup_cmd(int argc, char **argv);
@@ -19,5 +20,9 @@ int crc_cmd(int argc, char **argv);
 int implicit_cmd(int argc, char **argv);
 int payload_cmd(int argc, char **argv);
 int init_sx1272_cmd(int argc, char **argv);
+int lorachat_send_cmd(int argc, char **argv);
+int nodes_cmd(int argc, char **argv);
+int salons_cmd(int argc, char **argv);
+int messages_cmd(int argc, char **argv);
 
 #endif

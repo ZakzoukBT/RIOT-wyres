@@ -39,6 +39,9 @@ static const shell_command_t shell_commands[] = {
     {"listen", "Start raw payload listener", listen_cmd},
     {"echo", "Enable/disable echo mode (re-send received payload)", echo_cmd},
     {"reset", "Reset the sx127x device", reset_cmd},
+    {"nodes", "Lister les noeuds connus", nodes_cmd},
+    {"salons", "Gérer les abonnements aux salons", salons_cmd},
+    {"messages", "Lister les messages reçus", messages_cmd},
     {NULL, NULL, NULL}};
 
 int main(void)
