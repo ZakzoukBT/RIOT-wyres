@@ -48,7 +48,7 @@ void lorachat_construct_message(char *message, char *result) {
 
     char message_id[MAX_MESSAGE_ID_LEN]; sprintf(message_id, "%u", lorachat_next_msg_id);
 
-    sprintf(result, "%s@%s:%s:%s", sender, salon, message_id, message);
+    snprintf(result, MAX_MESSAGE_LEN, "%s@%s:%s:%s", sender, salon, message_id, message);
     printf("[DEBUG] Built message '%s'\n", result);
 }
 
