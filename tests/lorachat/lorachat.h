@@ -57,5 +57,7 @@ void lorachat_remove_salon(uint8_t salon_id);
 void lorachat_print_nodes(void);
 /* List messages in the queue */
 void lorachat_print_messages(void);
+/* Enqueue a received message */
+void lorachat_enqueue_message(uint8_t sender, uint8_t dest, uint8_t msg_num, const char *content);
 
 #endif

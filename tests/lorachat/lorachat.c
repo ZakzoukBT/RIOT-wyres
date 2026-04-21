@@ -44,11 +44,11 @@ void lorachat_construct_message(char *message, char *result) {
     char sender[MAX_NODE_LEN]; sprintf(sender, "%u", lorachat_sender_id);
 
     char salon[MAX_SALON_LEN]; sprintf(salon, "%u", lorachat_selected_salon);
-    if (strcmp(salon, "0") == 0) { strcpy(salon, "*"); }
+    if (strcmp(salon, "0") == 0) { snprintf(salon, sizeof(salon), "*"); }
 
     char message_id[MAX_MESSAGE_ID_LEN]; sprintf(message_id, "%u", lorachat_next_msg_id);
 
-    sprintf(result, "%s@%s:%s:%s", sender, salon, message_id, message);
+    snprintf(result, MAX_MESSAGE_LEN, "%s@%s:%s:%s", sender, salon, message_id, message);
     printf("[DEBUG] Built message '%s'\n", result);
 }
 
@@ -212,7 +212,11 @@ void lorachat_remove_salon(uint8_t salon_id) {
     printf("[DEBUG] lorachat_remove_salon: Removing salon %u\n", salon_id);
     for (uint8_t i = 0; i < salon_count; i++) {
         if (subscribed_salons[i].salon_id == salon_id) {
-            memset(&subscribed_salons[i], 0, sizeof(salon_t));
+            for (uint8_t j = i; j + 1 < salon_count; j++) {
+                subscribed_salons[j] = subscribed_salons[j + 1];
+            }
+            memset(&subscribed_salons[salon_count - 1], 0, sizeof(salon_t));
+            salon_count--;
             printf("[DEBUG] Salon %u removed\n", salon_id);
             return;
         }
