@@ -47,7 +47,7 @@ static const shell_command_t lorachat_shell_commands[] = {
     {"salon", "Select the salon to send messages in", lorachat_select_salon_cmd},
     {"send", "Send a message in the selected salon", lorachat_send_cmd},
     {"salons", "Subscribe/Unsubscribe from a salon", lorachat_salons_cmd},
-    {"nodes", "List available nodes", lorachat_nodes_cmd},
+    {"nodes", "List known nodes and their last seen message number", lorachat_nodes_cmd},
     {"messages", "List messages in the selected salon", lorachat_messages_cmd},
     {NULL, NULL, NULL}
 };

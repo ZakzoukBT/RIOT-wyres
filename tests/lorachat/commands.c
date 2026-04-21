@@ -32,10 +32,10 @@
 static char stack[SX127X_STACKSIZE];
 static kernel_pid_t _recv_pid;
 
-static char message[MAX_MESSAGE_LEN];
 static uint8_t txhex_payload[255];
 static bool rxhex_enabled;
 static sx127x_t sx127x;
+static char message[MAX_MESSAGE_LEN];
 
 static bool echo_enabled = false;
 
