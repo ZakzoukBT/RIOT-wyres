@@ -6,8 +6,8 @@
 
 // Node, salon, and message queue storage
 static node_t known_nodes[MAX_NODES];
+static salon_t default_salon;
 static salon_t subscribed_salons[MAX_SALONS];
-static message_queue_t message_queue;
 
 // Node and salon counts
 static uint8_t node_count = 0;
@@ -26,11 +26,11 @@ void lorachat_init(void) {
     printf("[DEBUG] Initializing nodes, salons, and message queue\n");
     memset(known_nodes, 0, sizeof(known_nodes));
     memset(subscribed_salons, 0, sizeof(subscribed_salons));
-    memset(&message_queue, 0, sizeof(message_queue));
+    memset(&default_salon, 0, sizeof(default_salon)); // Initialisation complète
 
     // Set default sender id and selected salon
     lorachat_sender_id = 1;
-    subscribed_salons[0].salon_id = 0;
+    default_salon.salon_id = 0;
     lorachat_selected_salon = 0;
     lorachat_next_msg_id = 1;
 }
@@ -67,6 +67,55 @@ void lorachat_add_node(uint8_t node_id, uint8_t msg_num) {
         node_count++;
         printf("[DEBUG] Added new node %u\n", node_id);
     }
+}
+
+void lorachat_enqueue_message(uint8_t sender, uint8_t dest, uint8_t msg_num, const char *content) {
+    printf("[DEBUG] lorachat_enqueue_message: sender=%u dest=%u msg_num=%u content='%s'\n", sender, dest, msg_num, content);
+
+    // Handle default salon (id = 0)
+    if (dest == 0) {
+        message_queue_t *q = &default_salon.message_queue;
+        if (q->count >= MAX_MESSAGES) {
+            printf("[DEBUG] Default salon queue full, overwriting oldest message\n");
+            q->head = (q->head + 1) % MAX_MESSAGES;
+            q->count--;
+        }
+        q->messages[q->tail].sender = sender;
+        q->messages[q->tail].dest = dest;
+        q->messages[q->tail].msg_num = msg_num;
+        strncpy(q->messages[q->tail].content, content, MAX_MESSAGE_CONTENT_LEN - 1);
+        q->messages[q->tail].content[MAX_MESSAGE_CONTENT_LEN - 1] = '\0';
+        q->tail = (q->tail + 1) % MAX_MESSAGES;
+        q->count++;
+        lorachat_add_node(sender, msg_num);
+        printf("[DEBUG] Message enqueued in default salon at %u (count=%u)\n", q->tail, q->count);
+        return;
+    }
+
+    // Handle per-salon queues
+    for (uint8_t i = 0; i < salon_count; i++) {
+        if (subscribed_salons[i].salon_id == dest) {
+            message_queue_t *q = &subscribed_salons[i].message_queue;
+            if (q->count >= MAX_MESSAGES) {
+                printf("[DEBUG] Salon %u queue full, overwriting oldest message\n", dest);
+                q->head = (q->head + 1) % MAX_MESSAGES;
+                q->count--;
+            }
+            q->messages[q->tail].sender = sender;
+            q->messages[q->tail].dest = dest;
+            q->messages[q->tail].msg_num = msg_num;
+            strncpy(q->messages[q->tail].content, content, MAX_MESSAGE_CONTENT_LEN - 1);
+            q->messages[q->tail].content[MAX_MESSAGE_CONTENT_LEN - 1] = '\0';
+            q->tail = (q->tail + 1) % MAX_MESSAGES;
+            q->count++;
+            lorachat_add_node(sender, msg_num);
+            printf("[DEBUG] Message enqueued in salon %u at %u (count=%u)\n", dest, q->tail, q->count);
+            return;
+        }
+    }
+
+    // If not found, fallback to global queue (optional, or just drop)
+    printf("[DEBUG] No matching salon found for dest=%u, message dropped\n", dest);
 }
 
 void lorachat_handle_received_message(char* message) {
@@ -120,15 +169,24 @@ void lorachat_handle_received_message(char* message) {
     printf("[DEBUG] Message sender=%u salon=%u message_id=%u content='%s'\n",
            message_sender, salon_id, message_id, content);
 
+    message_t message_obj;
+    message_obj.sender = message_sender;
+    message_obj.dest = salon_id;
+    message_obj.msg_num = message_id;
+    strncpy(message_obj.content, content, MAX_MESSAGE_CONTENT_LEN - 1);
+    message_obj.content[MAX_MESSAGE_CONTENT_LEN - 1] = '\0';
+
     if (salon_id == 0) {
         printf("[DEBUG] Message for general salon %u\n", salon_id);
         lorachat_add_node(message_sender, message_id);
+        lorachat_enqueue_message(message_sender, salon_id, message_id, content);
         return;
     } else {
         for (uint8_t i = 0; i < salon_count; i++) {
             if (subscribed_salons[i].salon_id == salon_id) {
                 printf("[DEBUG] Message for subscribed salon %u\n", salon_id);
                 lorachat_add_node(message_sender, message_id);
+                lorachat_enqueue_message(message_sender, salon_id, message_id, content);
                 return;
             }
         }
@@ -161,24 +219,6 @@ void lorachat_remove_salon(uint8_t salon_id) {
     }
 }
 
-void lorachat_enqueue_message(uint8_t sender, uint8_t dest, uint8_t msg_num, const char *content) {
-    printf("[DEBUG] sender=%u dest=%u msg_num=%u content='%s'\n", sender, dest, msg_num, content);
-    if (message_queue.count >= MAX_MESSAGES) {
-        // File full, overwrite oldest message
-        printf("[DEBUG] Queue full, overwriting oldest message\n");
-        message_queue.head = (message_queue.head + 1) % MAX_MESSAGES;
-        message_queue.count--;
-    }
-    message_queue.messages[message_queue.tail].sender = sender;
-    message_queue.messages[message_queue.tail].dest = dest;
-    message_queue.messages[message_queue.tail].msg_num = msg_num;
-    strncpy(message_queue.messages[message_queue.tail].content, content, MAX_MESSAGE_LEN - 1);
-    message_queue.tail = (message_queue.tail + 1) % MAX_MESSAGES;
-    message_queue.count++;
-    lorachat_add_node(sender, msg_num);
-    printf("[DEBUG] Message enqueued at %u (count=%u)\n", message_queue.tail, message_queue.count);
-}
-
 void lorachat_print_nodes(void) {
     printf("[DEBUG] Printing all known nodes\n");
     printf("Known nodes (%u):\n", node_count);
@@ -188,12 +228,27 @@ void lorachat_print_nodes(void) {
 }
 
 void lorachat_print_messages(void) {
-    printf("[DEBUG] Printing all messages\n");
-    printf("Messages received (%u):\n", message_queue.count);
-    uint8_t index = message_queue.head;
-    for (uint8_t i = 0; i < message_queue.count; i++) {
-        message_t *msg = &message_queue.messages[index];
-        printf("  %u->%u #%u: %s\n", msg->sender, msg->dest, msg->msg_num, msg->content);
-        index = (index + 1) % MAX_MESSAGES;
+    printf("[DEBUG] Printing all messages in salon %u\n", lorachat_selected_salon);
+    if (lorachat_selected_salon == 0) {
+        printf("Messages received (%u):\n", default_salon.message_queue.count);
+        uint8_t idx = default_salon.message_queue.head;
+        for (uint8_t i = 0; i < default_salon.message_queue.count; i++) {
+            message_t *msg = &default_salon.message_queue.messages[idx];
+            printf("  %u->%u #%u: %s\n", msg->sender, msg->dest, msg->msg_num, msg->content);
+            idx = (idx + 1) % MAX_MESSAGES;
+        }
+    }
+    else {
+        for (uint8_t i = 0; i < salon_count; i++) {
+            if (subscribed_salons[i].salon_id == lorachat_selected_salon) {
+                printf("Messages received (%u):\n", subscribed_salons[i].message_queue.count);
+                uint8_t idx = subscribed_salons[i].message_queue.head;
+                for (uint8_t j = 0; j < subscribed_salons[i].message_queue.count; j++) {
+                    message_t *msg = &subscribed_salons[i].message_queue.messages[idx];
+                    printf("  %u->%u #%u: %s\n", msg->sender, msg->dest, msg->msg_num, msg->content);
+                    idx = (idx + 1) % MAX_MESSAGES;
+                }
+            }
+        }
     }
 }

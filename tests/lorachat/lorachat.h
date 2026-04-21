@@ -12,16 +12,12 @@
 #define MAX_MESSAGE_CONTENT_LEN 64
 #define MAX_MESSAGE_ID_LEN 8
 #define MAX_MESSAGE_LEN (MAX_NODE_LEN+1+MAX_SALON_LEN+1+MAX_MESSAGE_ID_LEN+1+MAX_MESSAGE_CONTENT_LEN)
-#define MAX_SENSORS 16
+#define MAX_SALON_MESSAGES_NUM 32
 
 typedef struct {
     uint8_t node_id;
     uint8_t last_msg_num;
 } node_t;
-
-typedef struct {
-    uint8_t salon_id;
-} salon_t;
 
 typedef struct {
     uint8_t sender;
@@ -36,6 +32,11 @@ typedef struct {
     uint8_t tail;
     uint8_t count;
 } message_queue_t;
+
+typedef struct {
+    uint8_t salon_id;
+    message_queue_t message_queue;
+} salon_t;
 
 /* Global next message id for this sender */
 extern uint16_t lorachat_next_msg_id;
