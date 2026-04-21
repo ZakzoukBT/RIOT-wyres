@@ -122,13 +122,13 @@ void lorachat_handle_received_message(char* message) {
 
     if (salon_id == 0) {
         printf("[DEBUG] Message for general salon %u\n", salon_id);
-        lorachat_add_node(message_sender, message_id);
+        lorachat_enqueue_message(message_sender, salon_id, message_id, content);
         return;
     } else {
         for (uint8_t i = 0; i < salon_count; i++) {
             if (subscribed_salons[i].salon_id == salon_id) {
                 printf("[DEBUG] Message for subscribed salon %u\n", salon_id);
-                lorachat_add_node(message_sender, message_id);
+                lorachat_enqueue_message(message_sender, salon_id, message_id, content);
                 return;
             }
         }
