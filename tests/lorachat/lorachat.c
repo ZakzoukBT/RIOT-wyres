@@ -154,7 +154,11 @@ void lorachat_remove_salon(uint8_t salon_id) {
     printf("[DEBUG] lorachat_remove_salon: Removing salon %u\n", salon_id);
     for (uint8_t i = 0; i < salon_count; i++) {
         if (subscribed_salons[i].salon_id == salon_id) {
-            memset(&subscribed_salons[i], 0, sizeof(salon_t));
+            for (uint8_t j = i; j + 1 < salon_count; j++) {
+                subscribed_salons[j] = subscribed_salons[j + 1];
+            }
+            memset(&subscribed_salons[salon_count - 1], 0, sizeof(salon_t));
+            salon_count--;
             printf("[DEBUG] Salon %u removed\n", salon_id);
             return;
         }
