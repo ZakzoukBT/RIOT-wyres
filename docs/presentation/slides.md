@@ -84,11 +84,11 @@ int send_hex_cmd(int argc, char **argv)
 
 ## Format de messages
 
-`ID-Source@ID-dest:message`
+`ID-source@salon:numero-message:message`
 
 Avec un broadcast sur `*` :
 
-`ID-source@*:message`
+`ID-source@*:numero-message:message`
 
 <!-- new_lines: 3 -->
 
@@ -98,9 +98,12 @@ Avec un broadcast sur `*` :
 - `setup <bw> <sf> <cr>` : regle la modulation LoRa
 - `channel set <hz>` : regle la frequence
 - `listen` : passe en ecoute continue
-- `id get|set <n>` : lit ou fixe l'identifiant local
-- `chat_send <dest_id|*> <message>` : envoie une trame `src@dest:message` ou
-  `src@*:message`
+- `salon <id>` : choisit le salon d'emission courant
+- `send <message>` : envoie une trame `src@salon:numero-message:message` ou
+  `src@*:numero-message:message`
+- `salons add <id>` / `salons remove <id>` : s'abonne ou se desabonne d'un salon
+- `nodes` : liste les noeuds connus
+- `messages` : liste les messages reçus
 
 <!-- new_lines: 3 -->
 
