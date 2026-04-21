@@ -44,7 +44,7 @@ void lorachat_construct_message(char *message, char *result) {
     char sender[MAX_NODE_LEN]; sprintf(sender, "%u", lorachat_sender_id);
 
     char salon[MAX_SALON_LEN]; sprintf(salon, "%u", lorachat_selected_salon);
-    if (strcmp(salon, "0") == 0) { strcpy(salon, "*"); }
+    if (strcmp(salon, "0") == 0) { snprintf(salon, sizeof(salon), "*"); }
 
     char message_id[MAX_MESSAGE_ID_LEN]; sprintf(message_id, "%u", lorachat_next_msg_id);
 
