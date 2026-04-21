@@ -1,0 +1,115 @@
+---
+title: IoT LoRa project
+sub_title: M2GI 2025/2026
+authors:
+  - Gaspard Culis
+  - Zakaria Bentanfous
+options:
+  h1_slide_titles: true
+  list_item_newlines: 2
+---
+
+<!-- list_item_newlines: 2 -->
+
+# Premiers pas avec la carte
+
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
+- Installation des librairies de compilation
+- Installation de [RIOT-OS](https://github.com/RIOT-OS/RIOT)
+- Débugging 😭
+- Installation de [RIOT-wyres](https://github.com/CampusIoT/RIOT-wyres)
+
+<!-- speaker_notes: |
+    On a passé 2 scéances là dessus lol
+-->
+
+<!-- column: 1 -->
+
+![board](./assets/board.jpg)
+
+<!-- end_slide -->
+
+# Customisation du driver
+
+<!-- speaker_notes: |
+    On a perdu beaucoup de temps à débugger en pensant que notre code causait des Kernel panic,
+    qui ont étés très aléatoires, mais en fait c'était qu'on n'exécutait pas la commande `init`.
+-->
+
+## Commandes TX/RX hexadécimal
+
+```c {1-30|1|3-9,15-17|20-28} +line_numbers
+static uint8_t txhex_payload[255];
+
+static void print_hex_payload(const uint8_t *buf, size_t len)
+{
+    for (size_t i = 0; i < len; i++)
+    {
+        printf("%02X", buf[i]);
+    }
+}
+
+int send_hex_cmd(int argc, char **argv)
+{
+    // ...
+
+    size_t len = convert_hex(txhex_payload, sizeof(txhex_payload), argv[1]);
+    
+    print_hex_payload(txhex_payload, len);
+    printf(") (%u bytes)\n", (unsigned)len);
+
+    iolist_t iolist = {
+        .iol_base = txhex_payload,
+        .iol_len = len};
+    netdev_t *netdev = &sx127x.netdev;
+
+    if (netdev->driver->send(netdev, &iolist) == -ENOTSUP)
+    {
+        puts("Cannot send: radio is still transmitting");
+    }
+    return 0;
+}
+```
+
+<!-- end_slide -->
+
+# LoRa ₍ᐢ֎ﻌ֍ᐢ₎ʃ
+
+<!-- speaker_notes: |
+    À partir d'ici c'était plutôt facile, on avait bien le contrôle sur la carte, et l'implémentation a été plutôt rapide bien que difficile à tester
+ -->
+
+## Format de messages
+
+`ID-source@salon:numero-message:message`
+
+Avec un broadcast sur `*` :
+
+`ID-source@*:numero-message:message`
+
+<!-- new_lines: 3 -->
+
+## Commandes
+
+- `init` : initialise le modem SX127x
+- `setup <bw> <sf> <cr>` : regle la modulation LoRa
+- `channel set <hz>` : regle la frequence
+- `listen` : passe en ecoute continue
+- `salon <id>` : choisit le salon d'emission courant
+- `send <message>` : envoie une trame `src@salon:numero-message:message` ou
+  `src@*:numero-message:message`
+- `salons add <id>` / `salons remove <id>` : s'abonne ou se desabonne d'un salon
+- `nodes` : liste les noeuds connus
+- `messages` : liste les messages reçus
+
+<!-- new_lines: 3 -->
+
+## Limitations et Risques de sécurité
+
+- 💢 Saisie "cassée" à la réception d'un message
+- 👀 Messages privés reçus en clair par chaque noeud
+- 🥸 Usurpation d'identité
+- 😈 Payload malicieux
