@@ -172,7 +172,8 @@ void lorachat_enqueue_message(uint8_t sender, uint8_t dest, uint8_t msg_num, con
     message_queue.messages[message_queue.tail].sender = sender;
     message_queue.messages[message_queue.tail].dest = dest;
     message_queue.messages[message_queue.tail].msg_num = msg_num;
-    strncpy(message_queue.messages[message_queue.tail].content, content, MAX_MESSAGE_LEN - 1);
+    strncpy(message_queue.messages[message_queue.tail].content, content, MAX_MESSAGE_CONTENT_LEN - 1);
+    message_queue.messages[message_queue.tail].content[MAX_MESSAGE_CONTENT_LEN - 1] = '\0';
     message_queue.tail = (message_queue.tail + 1) % MAX_MESSAGES;
     message_queue.count++;
     lorachat_add_node(sender, msg_num);
