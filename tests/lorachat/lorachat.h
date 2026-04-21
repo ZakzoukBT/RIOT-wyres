@@ -46,6 +46,8 @@ void lorachat_init(void);
 void lorachat_construct_message(char *message, char *result);
 /* Handle a received message */
 void lorachat_handle_received_message(char* message);
+/* Set the salon to listen to */
+void lorachat_select_salon(uint8_t salon_id);
 /* Subscribe to a salon */
 void lorachat_add_salon(uint8_t salon_id);
 /* Unsubscribe from a salon */

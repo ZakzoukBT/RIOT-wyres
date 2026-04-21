@@ -705,7 +705,6 @@ int init_sx1272_cmd(int argc, char **argv)
     }
     puts("5");
 
-    puts("Initiating LoRa₍ᐢ֎ﻌ֍ᐢ₎ʃ");
     lorachat_init();
 
     return 0;
@@ -714,6 +713,18 @@ int init_sx1272_cmd(int argc, char **argv)
 /******************************/
 /********** LORACHAT **********/
 /******************************/
+int lorachat_select_salon_cmd(int argc, char **argv) {
+    if (argc <= 1)
+    {
+        puts("usage: select_salon <salon_id>");
+        return -1;
+    }
+
+    uint8_t salon_id = atoi(argv[1]);
+    lorachat_select_salon(salon_id);
+
+    return 0;
+}
 
 int lorachat_send_cmd(int argc, char **argv) {
     if (argc <= 1)
@@ -722,7 +733,7 @@ int lorachat_send_cmd(int argc, char **argv) {
         return -1;
     }
 
-    char constructed_message[MAX_MESSAGE_LEN]; 
+    char constructed_message[MAX_MESSAGE_LEN];
     lorachat_construct_message(argv[1], constructed_message);
 
     iolist_t iolist = {
@@ -743,39 +754,39 @@ int lorachat_send_cmd(int argc, char **argv) {
     return 0;
 }
 
-int nodes_cmd(int argc, char **argv) {
+int lorachat_nodes_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
     lorachat_print_nodes();
     return 0;
 }
 
-int salons_cmd(int argc, char **argv) {
+int lorachat_salons_cmd(int argc, char **argv) {
     if (argc < 2) {
-        puts("usage: salons <add|remove> <salon_name>");
+        puts("usage: salons <add|remove> <salon_id>");
         return -1;
     }
     if (strcmp(argv[1], "add") == 0) {
         if (argc < 3) {
-            puts("usage: salons add <salon_name>");
+            puts("usage: salons add <salon_id>");
             return -1;
         }
         lorachat_add_salon((uint8_t)atoi(argv[2]));
     } else if (strcmp(argv[1], "remove") == 0) {
         if (argc < 3) {
-            puts("usage: salons remove <salon_name>");
+            puts("usage: salons remove <salon_id>");
             return -1;
         }
 
         lorachat_remove_salon((uint8_t)atoi(argv[2]));
     } else {
-        puts("usage: salons <add|remove> <salon_name>");
+        puts("usage: salons <add|remove> <salon_id>");
         return -1;
     }
     return 0;
 }
 
-int messages_cmd(int argc, char **argv) {
+int lorachat_messages_cmd(int argc, char **argv) {
     (void)argc;
     (void)argv;
     lorachat_print_messages();

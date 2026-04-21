@@ -22,6 +22,7 @@ static uint8_t lorachat_selected_salon = 0;
 uint16_t lorachat_next_msg_id = 1;
 
 void lorachat_init(void) {
+    printf("Initiating LoRa₍ᐢ֎ﻌ֍ᐢ₎ʃ\n");
     printf("[DEBUG] Initializing nodes, salons, and message queue\n");
     memset(known_nodes, 0, sizeof(known_nodes));
     memset(subscribed_salons, 0, sizeof(subscribed_salons));
@@ -34,13 +35,18 @@ void lorachat_init(void) {
     lorachat_next_msg_id = 1;
 }
 
-void lorachat_construct_message(char *message, char *result) {
-    char sender[8]; sprintf(sender, "%u", lorachat_sender_id);
+void lorachat_select_salon(uint8_t salon_id) {
+    lorachat_selected_salon = salon_id;
+    printf("[DEBUG] Selected salon %u\n", lorachat_selected_salon);
+}
 
-    char salon[8]; sprintf(salon, "%u", lorachat_selected_salon);
+void lorachat_construct_message(char *message, char *result) {
+    char sender[MAX_NODE_LEN]; sprintf(sender, "%u", lorachat_sender_id);
+
+    char salon[MAX_SALON_LEN]; sprintf(salon, "%u", lorachat_selected_salon);
     if (strcmp(salon, "0") == 0) { strcpy(salon, "*"); }
 
-    char message_id[8]; sprintf(message_id, "%u", lorachat_next_msg_id);
+    char message_id[MAX_MESSAGE_ID_LEN]; sprintf(message_id, "%u", lorachat_next_msg_id);
 
     sprintf(result, "%s@%s:%s:%s", sender, salon, message_id, message);
     printf("[DEBUG] Built message '%s'\n", result);

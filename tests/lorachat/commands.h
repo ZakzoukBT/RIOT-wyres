@@ -20,9 +20,10 @@ int crc_cmd(int argc, char **argv);
 int implicit_cmd(int argc, char **argv);
 int payload_cmd(int argc, char **argv);
 int init_sx1272_cmd(int argc, char **argv);
+int lorachat_select_salon_cmd(int argc, char **argv);
 int lorachat_send_cmd(int argc, char **argv);
-int nodes_cmd(int argc, char **argv);
-int salons_cmd(int argc, char **argv);
-int messages_cmd(int argc, char **argv);
+int lorachat_nodes_cmd(int argc, char **argv);
+int lorachat_salons_cmd(int argc, char **argv);
+int lorachat_messages_cmd(int argc, char **argv);
 
 #endif
